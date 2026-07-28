@@ -12,7 +12,7 @@ const profile = () => {
             <div className="flex justify-between">
               <li className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity list-none">
                 <span>OPEN</span>
-                <span className="text-black bg-white text-sm px-2 py-1 font-bold">
+                <span className="text-black bg-white px-2 py-1 font-bold">
                   PAPERS
                 </span>
               </li>
