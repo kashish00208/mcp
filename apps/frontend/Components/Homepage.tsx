@@ -35,13 +35,13 @@ const Homepage = () => {
   const router = useRouter();
 
   return (
-    <div className={`min-h-screen bg-slate-100/70 text-slate-800 ${inter.className} flex flex-col justify-between py-4 px-4 sm:px-8`}>
+    <div className={`min-h-screen bg-slate-100/70 text-slate-800 ${inter.className} flex flex-col justify-between py-10 px-4 `}>
       
       <div className="max-w-7xl w-full mx-auto bg-white/60 backdrop-blur-sm rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden min-h-[92vh] flex flex-col justify-between p-4 sm:p-8">
       
         <Nav />
 
-        <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 py-12 my-auto">
+        <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 my-auto">
           <motion.div
             variants={containerVariants}
             initial="hidden"
