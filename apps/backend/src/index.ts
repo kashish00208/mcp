@@ -26,8 +26,6 @@ app.post(
   chat
 );
 
-
-
 app.use(cors({ origin: "http://localhost:3000" }));
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
