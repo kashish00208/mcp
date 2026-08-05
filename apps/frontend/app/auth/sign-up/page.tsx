@@ -34,9 +34,8 @@ const page = () => {
       });
 
       if (!res.ok) {
-        const message = await res.text();
-        setError(message || "Something went wrong");
-        return;
+        setError("Server side issue Try again later")
+        throw new Error('Server side issue Try again later ')
       }
 
       const data = await res.json();
@@ -56,7 +55,6 @@ const page = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-white border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative"
       >
-        {/* Brand Header */}
         <div className="flex justify-center mb-8">
           <div 
             onClick={() => router.push("/")}
@@ -125,7 +123,7 @@ const page = () => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`${mono.className} text-xs mt-4 text-center bg-black text-white p-3 border-2 border-black font-bold uppercase`}
+            className={`${mono.className} text-xs mt-4 text-center  text-red-500 p-2 font-bold uppercase`}
           >
             ERR: {error.trim()}
           </motion.div>
