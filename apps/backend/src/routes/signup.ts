@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";  
 import { Request, Response } from "express";
-import { UserSchema } from "../lib/validate";
+import { UserSchema } from "../validateSchema/signupSchema";
 
 
 export async function SignUP(req: Request, res: Response) {

@@ -14,14 +14,14 @@ const page = () => {
   const [password, setUserPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const backend_rul = process.env.BACKEND_URL
+  const backend_url = process.env.BACKEND_URL
 
 
   const handleSubmit = async () => {
     setError("");
 
     try {
-      const res = await fetch("${backend_rul}/sign-in", {
+      const res = await fetch(`${backend_url}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
