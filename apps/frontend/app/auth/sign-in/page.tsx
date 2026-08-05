@@ -3,18 +3,23 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { Inter, JetBrains_Mono } from "next/font/google";
 
-const Page = () => {
+const inter = Inter({ subsets: ["latin"], weight: ["400", "700", "900"] });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"] });
+
+const page = () => {
   const [email, setUserEmail] = useState("");
   const [password, setUserPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const backend_rul = process.env.BACKEND_URL
 
   const handleSubmit = async () => {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8080/signin", {
+      const res = await fetch(`${backend_rul}/sign-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,8 +39,7 @@ const Page = () => {
       const data = await res.json();
       console.log("User:", data);
 
-      router.push("/chat")
-
+      router.push("/chat");
     } catch (err) {
       setError("Server connection failed");
       console.log(err);
@@ -43,49 +47,51 @@ const Page = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex justify-center items-center px-4 bg-zinc-950 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-size:[32px_32px]">
-     
-      <div className="absolute inset-0 bg-zinc-950 mask-[radial-gradient(ellipse_60%_60%_at_50%_50%,transparent_20%,black_100%)] pointer-events-none"></div>
-
+    <div className={`${inter.className} min-h-screen w-full flex justify-center items-center px-4 bg-white text-black`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-lg backdrop-blur-xs bg-black/40 border border-white/10  p-8 shadow-2xl relative z-10"
+        className="w-full max-w-md bg-white border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative"
       >
+        {/* Brand Header */}
         <div className="flex justify-center mb-8">
           <div 
             onClick={() => router.push("/")}
-            className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity select-none"
+            className="flex items-center gap-2 cursor-pointer select-none group"
           >
-            <span className="text-white font-semibold tracking-widest text-lg">OPEN</span>
-            <span className="text-black bg-white text-sm px-2 py-1 font-bold rounded-sm">PAPERS</span>
+            <div className="w-4 h-4 bg-black group-hover:bg-white group-hover:border-black border-2 border-black transition-colors" />
+            <span className="text-xl font-black tracking-tighter uppercase">OPEN PAPERS</span>
           </div>
         </div>
 
-        <h2 className="text-3xl font-bold text-white mb-8 text-center">
-          Welcome back
+        <h2 className="text-2xl font-black uppercase text-black mb-6 text-center tracking-tight">
+          Welcome Back
         </h2>
 
-        <div className="space-y-5">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-400 ml-1">Email</label>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={`${mono.className} text-xs font-bold uppercase tracking-wider text-black`}>
+              Email
+            </label>
             <input
               type="email"
               placeholder="hello@example.com"
               value={email}
               onChange={(e) => setUserEmail(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-white/30 focus:bg-white/10 transition-all placeholder:text-gray-600"
+              className="bg-white border-2 border-black p-3 text-black text-sm outline-none focus:bg-neutral-50 transition-all placeholder:text-neutral-400 font-medium"
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-400 ml-1">Password</label>
+          <div className="flex flex-col gap-1.5">
+            <label className={`${mono.className} text-xs font-bold uppercase tracking-wider text-black`}>
+              Password
+            </label>
             <input
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setUserPassword(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-white/30 focus:bg-white/10 transition-all placeholder:text-gray-600"
+              className="bg-white border-2 border-black p-3 text-black text-sm outline-none focus:bg-neutral-50 transition-all placeholder:text-neutral-400 font-medium"
             />
           </div>
 
@@ -93,7 +99,7 @@ const Page = () => {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleSubmit}
-            className="w-full mt-4 bg-white text-black font-semibold py-3 rounded-xl shadow-lg hover:bg-gray-200 transition-colors"
+            className={`${mono.className} w-full mt-2 bg-black text-white font-bold py-3.5 border-2 border-black text-xs uppercase tracking-wider shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] hover:bg-neutral-800 transition-all active:shadow-none`}
           >
             Sign In
           </motion.button>
@@ -103,17 +109,17 @@ const Page = () => {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-red-400 text-sm mt-4 text-center bg-red-400/10 py-2 rounded-lg"
+            className={`${mono.className} text-xs mt-4 text-center bg-black text-white p-3 border-2 border-black font-bold uppercase`}
           >
-            {error.trim()}
+            ERR: {error.trim()}
           </motion.div>
         )}
 
-        <p className="text-center text-gray-500 text-sm mt-8">
+        <p className={`${mono.className} text-center text-xs text-black/70 mt-8 uppercase font-bold`}>
           Don't have an account?{" "}
           <span 
             onClick={() => router.push("/auth/sign-up")} 
-            className="text-white cursor-pointer hover:underline font-medium"
+            className="text-black cursor-pointer underline hover:bg-black hover:text-white px-1 transition-colors"
           >
             Sign Up
           </span>
@@ -123,4 +129,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default page;
