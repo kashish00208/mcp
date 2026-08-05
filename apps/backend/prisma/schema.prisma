@@ -13,28 +13,27 @@ datasource db {
 }
 
 model User {
-  id String @unique @default(cuid())
-  name String 
-  email String @unique 
-  password String unique 
-  createdAt String @default(now())
-  chat Chat[]
+  id        String   @unique @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   @unique
+  createdAt DateTime @default(now())
+  chat      Chat[]
 }
 
-model Chat{
-  id         String       @id @default(cuid())
-  user       User         @relation(fields:[userId],references:[id])
-  userId     String       
-  title      String
-  createdAt  DateTime     @default(now())
-  messages   Message[]
+model Chat {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  title     String
+  createdAt DateTime  @default(now())
+  messages  Message[]
 }
 
-model Message{
-  id          String     @id @default(cuid())
-  chat        Chat       @relation(fields:[chatId],references :[id])
-  chatId      String     
-  sender      String    //"user"||"assistent
-  createdAt   DateTime   @default(now())  
+model Message {
+  id        String   @id @default(cuid())
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    String
+  sender    String 
+  createdAt DateTime @default(now())
 }
-
