@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";  
 import { Request, Response } from "express";
+import { UserSchema } from "../lib/validate";
 
 
 export async function SignUP(req: Request, res: Response) {
@@ -8,6 +9,12 @@ export async function SignUP(req: Request, res: Response) {
     const { name, email, password } = req.body || {};
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const validation = UserSchema.safeParse(req.body)
+
+    if(!validation){
+      return
     }
 
     const existingUser = await prisma.user.findUnique({
