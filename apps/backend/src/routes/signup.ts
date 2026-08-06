@@ -11,12 +11,7 @@ export async function SignUP(req: Request, res: Response) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    const validation = UserSchema.safeParse(req.body)
-
-    if(!validation){
-      return
-    }
-
+    
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });

@@ -1,37 +1,35 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+import Groq from "groq-sdk";
 
 import { SignUP } from "./routes/signup";
 import SignIn from "./routes/signin";
 import chat from "./routes/upload";
-import { upload } from "./lib/upload"
+import { upload } from "./lib/upload";
 
-import dotenv from "dotenv";
-import { Request, Response } from "express";
-import Groq from "groq-sdk";
 dotenv.config();
 
 const PORT = 8080;
 const app = express();
 
-app.use(cors());
+// Enable CORS for frontend before route declarations
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
+// Routes
 app.post("/auth/signup", SignUP);
 app.post("/auth/signin", SignIn);
-
-app.post(
-  "/chat",
-  upload.single("file"),
-  chat
-);
-
-app.use(cors({ origin: "http://localhost:3000" }));
+app.post("/chat", upload.single("file"), chat);
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.post("/api/chat/groq", async (req: Request, res: Response) => {
-
   try {
     const response = await groq.chat.completions.create({
       messages: [
@@ -42,7 +40,7 @@ app.post("/api/chat/groq", async (req: Request, res: Response) => {
         },
         {
           role: "user",
-          content: req.body.prompt
+          content: req.body.prompt,
         },
       ],
       model: "llama-3.1-8b-instant",
@@ -56,7 +54,6 @@ app.post("/api/chat/groq", async (req: Request, res: Response) => {
   }
 });
 
-
 app.listen(PORT, () => {
-  console.log("Server is running on PORT 8080");
+  console.log(`Server is running on PORT ${PORT}`);
 });
