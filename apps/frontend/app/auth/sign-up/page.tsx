@@ -14,14 +14,15 @@ const page = () => {
   const [password, setUserPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const backend_url = process.env.BACKEND_URL
+  const backend_url = process.env.NEXT_PUBLIC_API_URL
 
 
   const handleSubmit = async () => {
     setError("");
 
     try {
-      const res = await fetch(`${backend_url}/signup`, {
+      console.log(`${backend_url}/auth/signup`)
+      const res = await fetch(`${backend_url}/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

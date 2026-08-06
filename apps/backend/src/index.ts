@@ -17,8 +17,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/signup", SignUP);
-app.post("/signin", SignIn);
+app.post("/auth/signup", SignUP);
+app.post("/auth/signin", SignIn);
 
 app.post(
   "/chat",

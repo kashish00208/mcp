@@ -13,22 +13,25 @@ const page = () => {
   const [password, setUserPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const backend_url = process.env.BACKEND_URL
+  const backend_url = process.env.NEXT_PUBLIC_API_URL!;
 
   const handleSubmit = async () => {
     setError("");
 
     try {
-      const res = await fetch(`${backend_url}/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      );
 
       if (!res.ok) {
         const message = await res.text();
@@ -47,7 +50,9 @@ const page = () => {
   };
 
   return (
-    <div className={`${inter.className} min-h-screen w-full flex justify-center items-center px-4 bg-white text-black`}>
+    <div
+      className={`${inter.className} min-h-screen w-full flex justify-center items-center px-4 bg-white text-black`}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,12 +60,14 @@ const page = () => {
       >
         {/* Brand Header */}
         <div className="flex justify-center mb-8">
-          <div 
+          <div
             onClick={() => router.push("/")}
             className="flex items-center gap-2 cursor-pointer select-none group"
           >
             <div className="w-4 h-4 bg-black group-hover:bg-white group-hover:border-black border-2 border-black transition-colors" />
-            <span className="text-xl font-black tracking-tighter uppercase">OPEN PAPERS</span>
+            <span className="text-xl font-black tracking-tighter uppercase">
+              OPEN PAPERS
+            </span>
           </div>
         </div>
 
@@ -70,7 +77,9 @@ const page = () => {
 
         <div className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className={`${mono.className} text-xs font-bold uppercase tracking-wider text-black`}>
+            <label
+              className={`${mono.className} text-xs font-bold uppercase tracking-wider text-black`}
+            >
               Email
             </label>
             <input
@@ -83,7 +92,9 @@ const page = () => {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className={`${mono.className} text-xs font-bold uppercase tracking-wider text-black`}>
+            <label
+              className={`${mono.className} text-xs font-bold uppercase tracking-wider text-black`}
+            >
               Password
             </label>
             <input
@@ -106,7 +117,7 @@ const page = () => {
         </div>
 
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className={`${mono.className} text-xs mt-4 text-center bg-black text-white p-3 border-2 border-black font-bold uppercase`}
@@ -115,10 +126,12 @@ const page = () => {
           </motion.div>
         )}
 
-        <p className={`${mono.className} text-center text-xs text-black/70 mt-8 uppercase font-bold`}>
+        <p
+          className={`${mono.className} text-center text-xs text-black/70 mt-8 uppercase font-bold`}
+        >
           Don't have an account?{" "}
-          <span 
-            onClick={() => router.push("/auth/sign-up")} 
+          <span
+            onClick={() => router.push("/auth/sign-up")}
             className="text-black cursor-pointer underline hover:bg-black hover:text-white px-1 transition-colors"
           >
             Sign Up
