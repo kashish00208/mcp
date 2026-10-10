@@ -15,15 +15,18 @@
   "license": "ISC",
   "type": "module",
   "bin": {
-    "oss":"./oss/index.js"
+    "oss": "./oss/index.js"
   },
-  "files": ["oss"],
+  "files": [
+    "oss"
+  ],
   "bugs": {
     "url": "https://github.com/kashish00208/mcp/issues"
   },
   "homepage": "https://github.com/kashish00208/mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/server": "^2.3.1",
+    "octokit": "^5.0.5",
     "zod": "^4.6.5"
   },
   "devDependencies": {

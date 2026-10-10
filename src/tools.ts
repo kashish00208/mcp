@@ -1,47 +1,48 @@
-const USER_AGENT = "weather-app/1.0"
-export interface AlertFeature {
-  properties: {
-    event?: string;
-    areaDesc?: string;
-    severity?: string;
-    status?: string;
-    headline?: string;
-  };
-}
+//Tools
+//Identify the stack entry points modules and project structure
+import { Octokit } from "@octokit/core";
 
-interface display {
-    name?:string;
-    repositories?:number;
-    raisedPRs:number;
-    totalRaisedIssues?:number
-}
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
 
-async function makeGithubRequest<T>(url: string): Promise<T | null> {
-    const headers = {
-        "USer-Agent":USER_AGENT,
-        Accept:"application/geo+json",
-    };
-    
-    try{
-        const response = await fetch (url,{headers});
-        if(!response.ok){
-            throw new Error(`HTTP error! status : ${response.status}`)
+async function analyze_repository(repo_url: string) {
+    const match = repo_url.match(/github\.com\/([^/]+)\/([^/#?]+)/);
+
+    if(!match){
+        throw new Error("Invalid Github repository URL");
+    }
+
+    const owner = match[1];
+    const repo = match[2].replace(/\.git$/, "");
+
+    const response = await octokit.request(
+        "GET /repos/{owner}/{repo}/contents/{path}"
+        {
+            owner,
+            repo,
+            path:"",
+            headers:{
+                "X-Github-Api-Version":"2026-03-10"
+            }
         }
-        return (await response.json()) as T;
-    }catch(err){
-        console.error("Error making NWS request :",err)
-        return null
+    )
+
+    const files = response.data;
+
+    if(!Array.isArray(files)){
+        throw new Error("Expected repository directory contents");
+    }
+
+    const project_structure = files.map((file)=>({
+        name:file.name,
+        path:file.path,
+        type:file.type
+    }));
+
+    return {
+        owner,
+        repo,
+        project_structure
     }
 }
-
-function formatAlert(feature:AlertFeature):String{
-    const props = feature.properties;
-     return [
-    `Event: ${props.event || "Unknown"}`,
-    `Area: ${props.areaDesc || "Unknown"}`,
-    `Severity: ${props.severity || "Unknown"}`,
-    `Status: ${props.status || "Unknown"}`,
-    `Headline: ${props.headline || "No headline"}`,
-    "---",
-  ].join("\n");
-} 
