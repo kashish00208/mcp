@@ -6,16 +6,16 @@ const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
 
-async function analyze_repository(repo_url: string) {
-  const match = repo_url.match(/github\.com\/([^/]+)\/([^/#?]+)/);
+export type CodeSearchOptions = {
+  repoUrl: string;
+  query: string;
+  perPage?: number;
+};
 
-  if (!match) {
-    throw new Error("Invalid Github repository URL");
-  }
+// Tools
 
-  const owner = match[1];
-  const repo = match[2].replace(/\.git$/, "");
-
+export async function analyze_repository(repo_url: string) {
+  const { owner, repo } = parseGithubRepoUrl(repo_url);
   const response = await octokit.request(
     "GET /repos/{owner}/{repo}/contents/{path}",
     {
@@ -47,16 +47,8 @@ async function analyze_repository(repo_url: string) {
   };
 }
 
-//Return a summarized directory tree
-async function get_repositroy_map(repo_url: string) {
-  const match = repo_url.match(/github\.com\/([^/]+)\/([^/#?]+)/);
-
-  if (!match) {
-    throw new Error("Invalid Github repository URL");
-  }
-
-  const owner = match[1];
-  const repo = match[2].replace(/\.git$/, "");
+export async function get_repositroy_map(repo_url: string) {
+   const { owner, repo } = parseGithubRepoUrl(repo_url);
 
   const { data: repository } = await octokit.request(
     "GET /repos/{owner}/{repo}",
@@ -97,14 +89,7 @@ async function get_repositroy_map(repo_url: string) {
 }
 
 export async function detectTechStack(repo_url: string) {
-  const match = repo_url.match(/github\.com\/([^/]+)\/([^/#?]+)/);
-
-  if (!match) {
-    throw new Error("Invalid GitHub repository URL");
-  }
-
-  const owner = match[1];
-  const repo = match[2].replace(/\.git$/, "");
+   const { owner, repo } = parseGithubRepoUrl(repo_url);
 
   // Get repository's default branch
   const { data: repository } = await octokit.rest.repos.get({
@@ -233,7 +218,7 @@ export async function detectTechStack(repo_url: string) {
   };
 }
 
-function parseGithubRepoUrl(repo_url: string) {
+export function parseGithubRepoUrl(repo_url: string) {
   const match =
     repo_url.match(/github\.com[/:]([^/]+)\/([^/#?]+)/i) ??
     repo_url.match(/git@github\.com:([^/]+)\/([^/#?]+)/i);
@@ -248,7 +233,7 @@ function parseGithubRepoUrl(repo_url: string) {
   };
 }
 
-function detectLanguage(file_path: string) {
+export function detectLanguage(file_path: string) {
   const name = file_path.toLowerCase();
 
   if (name.endsWith(".ts") || name.endsWith(".tsx")) return "TypeScript";
@@ -265,7 +250,7 @@ function detectLanguage(file_path: string) {
   return "Text";
 }
 
-function extractSymbolNames(content: string) {
+export function extractSymbolNames(content: string) {
   const patterns = [
     /export\s+(?:default\s+)?(?:async\s+)?function\s+([A-Za-z0-9_]+)/g,
     /export\s+(?:default\s+)?class\s+([A-Za-z0-9_]+)/g,
@@ -289,7 +274,7 @@ function extractSymbolNames(content: string) {
   return [...symbols].slice(0, 8);
 }
 
-function explainContent(
+export function explainContent(
   file_path: string,
   content: string,
   stack: Record<string, string[]>,
@@ -401,12 +386,6 @@ export async function explain_file(repo_url: string, file_path: string) {
     ...explanation,
   };
 }
-
-type CodeSearchOptions = {
-  repoUrl: string;
-  query: string;
-  perPage?: number;
-};
 
 export async function search_code({
   repoUrl,
