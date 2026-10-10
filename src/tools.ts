@@ -402,4 +402,43 @@ export async function explain_file(repo_url: string, file_path: string) {
   };
 }
 
-export const explainFile = explain_file;
+type CodeSearchOptions = {
+  repoUrl: string;
+  query: string;
+  perPage?: number;
+};
+
+export async function search_code({
+  repoUrl,
+  query,
+  perPage = 10,
+}: CodeSearchOptions) {
+  const { owner, repo } = parseGithubRepoUrl(repoUrl);
+
+  if (!query.trim()) {
+    throw new Error("Search query cannot be empty");
+  }
+
+  const { data } = await octokit.rest.search.code({
+    q: `${query.trim()} repo:${owner}/${repo}`,
+    per_page: Math.min(Math.max(perPage, 1), 100),
+  });
+
+  return {
+    repository: `${owner}/${repo}`,
+    query,
+    totalCount: data.total_count,
+    incompleteResults: data.incomplete_results,
+    results: data.items.map((item) => ({
+      path: item.path,
+      name: item.name,
+      url: item.html_url,
+      sha: item.sha,
+      repository: item.repository.full_name,
+      snippet: item.text_matches?.map(
+        (match) => match.fragment
+      ) ?? [],
+    })),
+  };
+}
+
