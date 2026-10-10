@@ -1,6 +1,4 @@
-import { pathToFileURL } from "node:url";
 import { McpServer } from "@modelcontextprotocol/server";
-import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 import { z } from "zod";
 import {
   analyze_repository,
@@ -9,105 +7,96 @@ import {
   get_repositroy_map,
   search_code,
 } from "./tools.js";
+import type { CallToolResult } from "@modelcontextprotocol/server";
+
 
 export const server = new McpServer({
   name: "Github-Explorer",
   version: "1.0.0",
 });
 
-export function registerJsonTool<T extends z.ZodType>(
-  name: string,
-  description: string,
-  inputSchema: T,
-  handler: (args: z.infer<T>) => Promise<unknown>,
-) {
-  server.registerTool(
-    name,
-    {
-      title: name,
-      description,
-      inputSchema,
-    },
-    async (args) => {
-      try {
-        const result = await handler(args as z.infer<T>);
 
-        const structuredContent =
-          typeof result === "object" &&
-          result !== null &&
-          !Array.isArray(result)
-            ? (result as Record<string, unknown>)
-            : { value: result };
+async function run(fn: () => Promise<unknown>): Promise<CallToolResult> {
+  try {
+    const result = await fn();
+    const structuredContent =
+      typeof result === "object" && result !== null && !Array.isArray(result)
+        ? (result as Record<string, unknown>)
+        : { value: result };
 
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent,
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text:
-                error instanceof Error
-                  ? error.message
-                  : "Tool execution failed",
-            },
-          ],
-          isError: true,
-        };
-      }
-    },
-  );
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      structuredContent,
+    };
+  } catch (error) {
+    return {
+      content: [
+        {
+          type: "text",
+          text: error instanceof Error ? error.message : "Tool execution failed",
+        },
+      ],
+      isError: true,
+    };
+  }
 }
-registerJsonTool(
+
+const repoInput = z.object({ repo_url: z.string().min(1) });
+
+server.registerTool(
   "analyze_repository",
-  "Analyze the top-level structure of a GitHub repository.",
-  z.object({ repo_url: z.string().min(1) }),
-  async ({ repo_url }) => analyze_repository(repo_url),
+  {
+    title: "analyze_repository",
+    description: "Analyze the top-level structure of a GitHub repository.",
+    inputSchema: repoInput,
+  },
+  ({ repo_url }) => run(() => analyze_repository(repo_url)),
 );
 
-registerJsonTool(
+server.registerTool(
   "get_repository_map",
-  "Fetch the file tree for a GitHub repository.",
-  z.object({ repo_url: z.string().min(1) }),
-  async ({ repo_url }) => get_repositroy_map(repo_url),
+  {
+    title: "get_repository_map",
+    description: "Fetch the file tree for a GitHub repository.",
+    inputSchema: repoInput,
+  },
+  ({ repo_url }) => run(() => get_repositroy_map(repo_url)),
 );
 
-registerJsonTool(
+server.registerTool(
   "detect_tech_stack",
-  "Detect likely technologies used by a repository from its file tree.",
-  z.object({ repo_url: z.string().min(1) }),
-  async ({ repo_url }) => detectTechStack(repo_url),
+  {
+    title: "detect_tech_stack",
+    description: "Detect likely technologies used by a repository from its file tree.",
+    inputSchema: repoInput,
+  },
+  ({ repo_url }) => run(() => detectTechStack(repo_url)),
 );
 
-registerJsonTool(
+server.registerTool(
   "explain_file",
-  "Summarize the contents of a file from a GitHub repository.",
-  z.object({ repo_url: z.string().min(1), file_path: z.string().min(1) }),
-  async ({ repo_url, file_path }) => explain_file(repo_url, file_path),
+  {
+    title: "explain_file",
+    description: "Summarize the contents of a file from a GitHub repository.",
+    inputSchema: z.object({
+      repo_url: z.string().min(1),
+      file_path: z.string().min(1),
+    }),
+  },
+  ({ repo_url, file_path }) => run(() => explain_file(repo_url, file_path)),
 );
 
-registerJsonTool(
+server.registerTool(
   "search_code",
-  "Search for code inside a GitHub repository.",
-  z.object({ repoUrl: z.string().min(1), query: z.string().min(1), perPage: z.number().int().positive().optional() }),
-  async ({ repoUrl, query, perPage }) => search_code({ repoUrl, query, perPage }),
+  {
+    title: "search_code",
+    description: "Search for code inside a GitHub repository.",
+    inputSchema: z.object({
+      repo_url: z.string().min(1),
+      query: z.string().min(1),
+      per_page: z.number().int().positive().max(100).optional(),
+    }),
+  },
+  ({ repo_url, query, per_page }) =>
+    run(() => search_code({ repoUrl: repo_url, query, perPage: per_page })),
 );
-
-export async function main() {
-  await server.connect(new StdioServerTransport());
-}
-
-const isDirectExecution =
-  typeof process.argv[1] === "string" &&
-  import.meta.url === pathToFileURL(process.argv[1]).href;
-
-if (isDirectExecution) {
-  void main();
-}
