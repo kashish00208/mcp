@@ -12,42 +12,46 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
-server.registerTool(
-  "analyze_repository",
-  {
-    title: "Analyze GitHub Repository",
-    description:
-      "Fetch the root directory structure of a GitHub repository, including file names, paths, and types.",
-    inputSchema: z.object({
-      repo_url: z.string().url().describe("The URL of a GitHub repository"),
-    }),
-  },
-  async ({ repo_url }) => {
-    try {
-      const result = await analyze_repository(repo_url);
+function registerJsonTool<T extends z.ZodType>(
+  name: string,
+  description: string,
+  inputSchema: T,
+  handler: (args: z.infer<T>) => Promise<unknown>,
+) {
+  server.registerTool(
+    name,
+    {
+      title: name,
+      description,
+      inputSchema,
+    },
+    async (args) => {
+      try {
+        const result = await handler(args as z.infer<T>);
 
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text" as const,
-            text:
-              error instanceof Error
-                ? error.message
-                : "Repository analysis failed",
-          },
-        ],
-        isError: true,
-      };
-    }
-  },
-);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+          structuredContent: result as Record<string, unknown>,
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text:
+                error instanceof Error
+                  ? error.message
+                  : "Tool execution failed",
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+}
